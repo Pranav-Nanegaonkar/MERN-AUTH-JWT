@@ -3,6 +3,7 @@ import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../constants/http";
 import z from "zod";
 import AppError from "../utils/AppError";
 import { NODE_ENV } from "../constants/env";
+import { clearAuthCookie, REFRESH_PATH } from "../utils/cookies";
 
 function getErrorLocation(stack: string | undefined) {
   if (!stack) return null;
@@ -11,8 +12,8 @@ function getErrorLocation(stack: string | undefined) {
   const lines = stack.split("\n");
 
   // Find first line that includes .js or .ts file reference
-  const relevantLine = lines.find((line) =>
-    line.includes(".ts:") || line.includes(".js:")
+  const relevantLine = lines.find(
+    (line) => line.includes(".ts:") || line.includes(".js:")
   );
 
   if (!relevantLine) return null;
@@ -30,7 +31,6 @@ function getErrorLocation(stack: string | undefined) {
     column: match[4],
   };
 }
-
 
 const handleZodError = (res: Response, error: z.ZodError) => {
   const errors = error.issues.map((err) => ({
@@ -57,6 +57,9 @@ const handleAppError = (res: Response, error: AppError) => {
 const errorHandler: ErrorRequestHandler = async (error, req, res, next) => {
   console.log(`PATH: ${req.path}`, error);
 
+  if (req.path === REFRESH_PATH) {
+    clearAuthCookie({ res });
+  }
   if (error instanceof z.ZodError) {
     return handleZodError(res, error);
   }

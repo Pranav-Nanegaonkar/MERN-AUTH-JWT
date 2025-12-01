@@ -42,23 +42,43 @@ export const signToken = (
   });
 };
 
-export const verifyToken = <Tpayload extends object = AccessTokenPayload>(
+// export const verifyToken = <Tpayload extends object = AccessTokenPayload>(
+//   token: string,
+//   options?: VerifyOptions & { secret: string }
+// ) => {
+//   const { secret = JWT_SECRET, ...verifyOptions } = options || {};
+
+//   try {
+//     const payload = jwt.verify(token, secret, (error, payload) => {
+//       if (error) throw new AppError("Invalid token", 401);
+//       return payload;
+//     });
+//     return {
+//       payload,
+//     };
+//   } catch (error: any) {
+//     return {
+//       error: error.message,
+//     };
+//   }
+// };
+
+
+export type TokenResult<T> = {
+  payload: T | null;
+  error?: string;
+};
+
+export const verifyToken = <TPayload extends object = AccessTokenPayload>(
   token: string,
-  options?: VerifyOptions & { secret: string }
-) => {
-  const { secret = JWT_SECRET, ...verifyOptions } = options || {};
+  options?: VerifyOptions & { secret?: string }
+): TokenResult<TPayload> => {
+  const { secret = JWT_SECRET, ...verifyOptions } = options ?? {};
 
   try {
-    const payload = jwt.verify(token, secret, (error, payload) => {
-      if (error) throw new AppError("Invalid token", 401);
-      return payload;
-    });
-    return {
-      payload,
-    };
+    const payload = jwt.verify(token, secret, verifyOptions) as TPayload;
+    return { payload };
   } catch (error: any) {
-    return {
-      error: error.message,
-    };
+    return { payload: null, error: error.message };
   }
 };

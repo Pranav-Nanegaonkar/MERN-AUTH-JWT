@@ -13,15 +13,17 @@ const defaults: CookieOptions = {
   secure: process.env.NODE_ENV === "production" ? true : false,
 };
 
-const getAccessTokenCookieOptions = (): CookieOptions => ({
+export const REFRESH_PATH = "/auth/refresh";
+
+export const getAccessTokenCookieOptions = (): CookieOptions => ({
   ...defaults,
   expires: fifteenMinutesFromNow(),
 });
 
-const getRefreshTokenCookieOptions = (): CookieOptions => ({
+export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   ...defaults,
   expires: thirtyDaysFromNow(),
-  path: "/auth/refresh",
+  path: REFRESH_PATH,
 });
 
 export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) =>
@@ -29,7 +31,7 @@ export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) =>
     .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
     .cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
 
-export const clearAuthCookie = ({res}: {res: Response}) =>
+export const clearAuthCookie = ({ res }: { res: Response }) =>
   res.clearCookie("accessToken").clearCookie("refreshToken", {
-    path: "/auth/refresh",
+    path: REFRESH_PATH,
   });

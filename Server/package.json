@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev --files src/index.ts"
+    "start": "ts-node-dev --files src/index.ts",
+    "dev": "nodemon src/index.ts"
   },
   "keywords": [],
   "author": "",
@@ -12,6 +13,7 @@
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",
+    "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -21,11 +23,15 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^9.0.0",
     "morgan": "^1.10.1",
+    "nodemon": "^3.1.11",
     "resend": "^6.5.2",
+    "swagger-ui-express": "^5.0.1",
+    "yamljs": "^0.3.0",
     "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/dotenv": "^6.1.1",
@@ -33,6 +39,9 @@
     "@types/helmet": "^0.0.48",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
+    "@types/nodemon": "^1.19.6",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/yamljs": "^0.2.34",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.9.3"
   }

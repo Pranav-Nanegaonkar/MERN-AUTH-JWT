@@ -17,3 +17,6 @@ export const registerSchema = z
     message: "Password do not match",
     path: ["confirmPassword"],
   });
+
+export const verificationCodeSchema = z.string().min(1).max(24);
+export const emailSchema = z.string().email().min(1).max(255);

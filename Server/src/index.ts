@@ -9,10 +9,16 @@ import errorHandler from "./middleware/errorHandler";
 import { OK } from "./constants/http";
 import authRoutes from "./routes/auth.routes";
 import connectToDatabase from "./config/db";
+import YAML from "yamljs";
+import swaggerUi from "swagger-ui-express";
+import compression from "compression";
+const swaggerDocument = YAML.load("./swagger.yml");
 
 connectToDatabase();
 
 const app = express();
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(
   cors({
@@ -25,7 +31,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(helmet());
 app.use(morgan("dev"));
-
+app.use(compression());
 app.get("/health", (req, res, next) => {
   // next(new AppError("test error", 400));
 

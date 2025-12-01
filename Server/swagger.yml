@@ -1,0 +1,40 @@
+openapi: 3.0.0
+info:
+  title: My API Documentation
+  version: 1.0.0
+  description: API documentation using YAML file
+
+servers:
+  - url: http://localhost:4004
+
+tags:
+  - name: auth
+    description: Everything about your Pets
+
+paths:
+  /auth/login:
+    post:
+      summary: Login user
+      tags:
+        - auth
+
+      requestBody:
+        description: Update an existent pet in the store
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Pet"
+          application/xml:
+            schema:
+              $ref: "#/components/schemas/Pet"
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/Pet"
+        required: true
+      responses:
+        "200":
+          description: User logged in successfully
+
+components:
+  schemas:
+    auth:
