@@ -11,17 +11,21 @@ import {
   createAccount,
   loginUser,
   refreshUserAccessToken,
+  resetPassword,
+  sendPasswordResetEmail,
   verifyEmail,
-} from "../services/auth.services";
+} from "../services/auth.service";
 import {
   emailSchema,
   loginSchema,
   registerSchema,
+  resetPasswordSchema,
   verificationCodeSchema,
 } from "./auth.schemas";
 import { verifyToken } from "../utils/jwt";
 import SessionModel from "../models/session.model";
 import AppError from "../utils/AppError";
+import { reset } from "nodemon";
 
 export const registerHandler = expressAsyncHandler(async (req, res, next) => {
   // validate request
@@ -68,7 +72,7 @@ export const logoutHandler = expressAsyncHandler(async (req, res, next) => {
     await SessionModel.findByIdAndDelete(resultPayload.payload.sessionId);
   }
 
-  clearAuthCookie({ res }).json({
+  clearAuthCookie(res).json({
     message: "Logout successful",
   });
 });
@@ -114,6 +118,25 @@ export const verifyEmailHandler = expressAsyncHandler(
 export const sendPasswordRestHandler = expressAsyncHandler(
   async (req, res, next) => {
     const email = emailSchema.parse(req.body.email);
-    
+
+    const data = await sendPasswordResetEmail(email);
+
+    res.status(OK).json({
+      message: "Password reset email sent",
+    });
+  }
+);
+
+export const restPasswordHandler = expressAsyncHandler(
+  async (req, res: Response, next) => {
+    const request = resetPasswordSchema.parse(req.body);
+
+    //call service
+
+    await resetPassword(request);
+
+    clearAuthCookie(res).status(OK).json({
+      message: "Password reset successfully",
+    });
   }
 );

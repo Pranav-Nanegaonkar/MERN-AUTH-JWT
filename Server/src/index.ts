@@ -12,6 +12,9 @@ import connectToDatabase from "./config/db";
 import YAML from "yamljs";
 import swaggerUi from "swagger-ui-express";
 import compression from "compression";
+import { authenticate } from "./middleware/authenticate";
+import userRoutes from "./routes/user.routes";
+import sessionRoutes from "./routes/session.routes";
 const swaggerDocument = YAML.load("./swagger.yml");
 
 connectToDatabase();
@@ -42,6 +45,9 @@ app.get("/health", (req, res, next) => {
 
 app.use("/auth", authRoutes);
 
+// protected routes
+app.use("/user", authenticate, userRoutes);
+app.use("/sessions", authenticate, sessionRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () => {

@@ -11,6 +11,7 @@ import UserModel from "../models/user.model";
 import AppError from "../utils/AppError";
 import {
   CONFLICT,
+  INTERNAL_SERVER_ERROR,
   NOT_FOUND,
   TOO_MANY_REQUESTS,
   UNAUTHORIZED,
@@ -24,8 +25,12 @@ import {
 } from "../utils/jwt";
 import { optionalKeys } from "zod/v4/core/util.cjs";
 import { sendMail } from "../utils/sendMail";
-import { getVerifyEmailTemplate } from "../utils/emailTemplate";
+import {
+  getPasswordResetTemplate,
+  getVerifyEmailTemplate,
+} from "../utils/emailTemplate";
 import { APP_ORIGIN } from "../constants/env";
+import { hashValue } from "../utils/bcrypt";
 
 export type CreateAccountsParms = {
   email: string;
@@ -285,9 +290,74 @@ export const sendPasswordResetEmail = async (email: string) => {
 
   // create verification code
   const expiresAt = oneHourFromNow();
-  // const verificationCode = await VerificationCodeModel.create({
-  //   userId: user._id
-  // })
+  const verificationCode = await VerificationCodeModel.create({
+    userId: user._id,
+    type: VerificationCodeType.PasswordReset,
+    expiresAt,
+  });
   // send verification email
+  const url = `${APP_ORIGIN}/password/reset?code=${
+    verificationCode._id
+  }&exp=${expiresAt.getTime()}`;
+
+  const { data: mailResponse, error } = await sendMail({
+    to: user.email,
+    ...getPasswordResetTemplate(url),
+  });
+
+  if (!mailResponse?.id) {
+    throw new AppError(
+      `${error?.name} - ${error?.message}`,
+      INTERNAL_SERVER_ERROR
+    );
+  }
+
   // return
+  return {
+    url,
+    emailId: mailResponse.id,
+  };
+};
+
+type ResetPasswordParams = {
+  password: string;
+  verificationCode: string;
+};
+
+export const resetPassword = async ({
+  password,
+  verificationCode,
+}: ResetPasswordParams) => {
+  //get the verification code
+  const validCode = await VerificationCodeModel.findOne({
+    _id: verificationCode,
+    type: VerificationCodeType.PasswordReset,
+    expiresAt: { $gt: new Date() },
+  });
+  if (!validCode) {
+    throw new AppError("Invalid or expired verification code", NOT_FOUND);
+  }
+  //upgrade the verification code
+  const updatedUser = await UserModel.findByIdAndUpdate(
+    validCode.userId,
+    {
+      password: await hashValue(password),
+    },
+    { new: true }
+  );
+
+  if (!updatedUser)
+    throw new AppError("Failed to reset password", INTERNAL_SERVER_ERROR);
+
+  //delete the verification code
+  await validCode.deleteOne();
+  //delete all sessions
+
+  await SessionModel.deleteMany({
+    userId: updatedUser._id,
+  });
+
+  return {
+    user: updatedUser.omitPassword(),
+  };
 };

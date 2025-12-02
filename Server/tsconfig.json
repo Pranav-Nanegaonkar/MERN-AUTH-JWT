@@ -5,8 +5,11 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "esModuleInterop": true,
-    "strict": true
+    "strict": true,
+    "types": ["node", "express"],
+    "typeRoots": ["src/types", "./node_modules/@types"],
+    "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["src", "src/types"],
   "exclude": ["node_modules", "dist"]
 }
