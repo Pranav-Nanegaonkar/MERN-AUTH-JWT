@@ -1,40 +1,512 @@
 openapi: 3.0.0
 info:
-  title: My API Documentation
+  title: MERN Authentication API
   version: 1.0.0
-  description: API documentation using YAML file
+  description: Complete authentication API with JWT tokens, email verification, password reset, and session management
 
 servers:
   - url: http://localhost:4004
+    description: Development server
 
 tags:
-  - name: auth
-    description: Everything about your Pets
+  - name: Auth
+    description: Authentication endpoints for registration, login, logout, and password management
+  - name: User
+    description: User profile management endpoints
+  - name: Sessions
+    description: Session management endpoints
 
 paths:
-  /auth/login:
-    post:
-      summary: Login user
-      tags:
-        - auth
+  /health:
+    get:
+      summary: Health check endpoint
+      description: Check if the API server is running
+      responses:
+        "200":
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
 
+  /auth/register:
+    post:
+      summary: Register a new user
+      description: Create a new user account with email and password
+      tags:
+        - Auth
       requestBody:
-        description: Update an existent pet in the store
+        required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Pet"
-          application/xml:
-            schema:
-              $ref: "#/components/schemas/Pet"
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: "#/components/schemas/Pet"
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account created successfully
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: "#/components/schemas/User"
+          headers:
+            Set-Cookie:
+              description: Access and refresh tokens
+              schema:
+                type: string
+        "400":
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Conflict - email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/login:
+    post:
+      summary: Login user
+      description: Authenticate user with email and password
+      tags:
+        - Auth
+      requestBody:
         required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
       responses:
         "200":
-          description: User logged in successfully
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Login successful
+                  data:
+                    type: object
+                    properties:
+                      user:
+                        $ref: "#/components/schemas/User"
+          headers:
+            Set-Cookie:
+              description: Access and refresh tokens
+              schema:
+                type: string
+        "400":
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized - invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/logout:
+    get:
+      summary: Logout user
+      description: Logout the current user and invalidate session
+      tags:
+        - Auth
+      parameters:
+        - in: cookie
+          name: accessToken
+          schema:
+            type: string
+          required: true
+          description: JWT access token
+      responses:
+        "200":
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logout successful
+          headers:
+            Set-Cookie:
+              description: Cleared authentication cookies
+              schema:
+                type: string
+
+  /auth/refresh:
+    get:
+      summary: Refresh access token
+      description: Get a new access token using refresh token
+      tags:
+        - Auth
+      parameters:
+        - in: cookie
+          name: refreshToken
+          schema:
+            type: string
+          required: true
+          description: JWT refresh token
+      responses:
+        "200":
+          description: Access token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Access token refreshed
+          headers:
+            Set-Cookie:
+              description: New access token
+              schema:
+                type: string
+        "401":
+          description: Unauthorized - missing or invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/email/verify/{code}:
+    get:
+      summary: Verify email address
+      description: Verify user email with verification code
+      tags:
+        - Auth
+      parameters:
+        - in: path
+          name: code
+          required: true
+          schema:
+            type: string
+          description: Email verification code
+      responses:
+        "200":
+          description: Email verified successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request - invalid verification code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Verification code not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/password/forgot:
+    post:
+      summary: Request password reset
+      description: Send password reset email to user
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@example.com
+      responses:
+        "200":
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset email sent
+        "400":
+          description: Bad request - invalid email
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /auth/password/reset:
+    post:
+      summary: Reset password
+      description: Reset user password with verification code
+      tags:
+        - Auth
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResetPasswordRequest"
+      responses:
+        "200":
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password reset successfully
+          headers:
+            Set-Cookie:
+              description: Cleared authentication cookies
+              schema:
+                type: string
+        "400":
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Verification code not found or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /user:
+    get:
+      summary: Get current user
+      description: Get the authenticated user's profile information
+      tags:
+        - User
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /sessions:
+    get:
+      summary: Get all user sessions
+      description: Retrieve all active sessions for the authenticated user
+      tags:
+        - Sessions
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Sessions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Session"
+        "401":
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /sessions/{id}:
+    delete:
+      summary: Delete a session
+      description: Delete a specific session by ID
+      tags:
+        - Sessions
+      security:
+        - cookieAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Session ID
+      responses:
+        "200":
+          description: Session deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Session deleted
+        "400":
+          description: Bad request - invalid session ID
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Session not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
 
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: accessToken
+      description: JWT access token stored in HTTP-only cookie
+
   schemas:
-    auth:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - confirmPassword
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+          example: user@example.com
+        password:
+          type: string
+          minLength: 6
+          maxLength: 255
+          example: SecurePassword123
+        confirmPassword:
+          type: string
+          minLength: 6
+          maxLength: 255
+          example: SecurePassword123
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 255
+          example: user@example.com
+        password:
+          type: string
+          minLength: 6
+          maxLength: 255
+          example: SecurePassword123
+
+    ResetPasswordRequest:
+      type: object
+      required:
+        - password
+        - verificationCode
+      properties:
+        password:
+          type: string
+          minLength: 6
+          maxLength: 255
+          example: NewSecurePassword123
+        verificationCode:
+          type: string
+          minLength: 1
+          maxLength: 24
+          example: abc123xyz789
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        verified:
+          type: boolean
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-01-01T00:00:00.000Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2024-01-01T00:00:00.000Z
+
+    Session:
+      type: object
+      properties:
+        _id:
+          type: string
+          example: 507f1f77bcf86cd799439011
+        userAgent:
+          type: string
+          example: Mozilla/5.0 (Windows NT 10.0; Win64; x64)
+        createdAt:
+          type: string
+          format: date-time
+          example: 2024-01-01T00:00:00.000Z
+
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: An error occurred
+        statusCode:
+          type: integer
+          example: 400
+        errors:
+          type: array
+          items:
+            type: object
