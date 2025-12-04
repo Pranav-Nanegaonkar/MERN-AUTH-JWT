@@ -23,7 +23,6 @@ import {
   signToken,
   verifyToken,
 } from "../utils/jwt";
-import { optionalKeys } from "zod/v4/core/util.cjs";
 import { sendMail } from "../utils/sendMail";
 import {
   getPasswordResetTemplate,
@@ -107,11 +106,11 @@ export const createAccount = async (data: CreateAccountsParms) => {
     accessTokenSignOptions
   );
 
-  const { password, ...userWithoutPassword } = user.toObject();
+  // const { password, ...userWithoutPassword } = user.toObject();
 
   // return user
   return {
-    user: userWithoutPassword,
+    user: user.omitPassword(),
     accessToken,
     refreshToken,
   };
@@ -167,11 +166,11 @@ export const loginUser = async (data: CreateAccountsParms) => {
     accessTokenSignOptions
   );
 
-  const { password, ...userWithoutPassword } = user.toObject();
+  // const { password, ...userWithoutPassword } = user.toObject();
 
   // return user
   return {
-    user: userWithoutPassword,
+    user: user.omitPassword(),
     accessToken,
     refreshToken,
   };
@@ -259,11 +258,11 @@ export const verifyEmail = async (code: string) => {
   await validCode.deleteOne();
 
   // return user
-  const { password, ...newUser } = updatedUser.toObject();
+  // const { password, ...newUser } = updatedUser.toObject();
 
   return {
     message: "User verified successfully",
-    user: newUser,
+    user: updatedUser.omitPassword(),
   };
 };
 

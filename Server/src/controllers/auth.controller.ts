@@ -1,5 +1,5 @@
 import expressAsyncHandler from "express-async-handler";
-import { NextFunction, Request, Response } from "express";
+import {  Request, Response } from "express";
 import { CREATED, OK, UNAUTHORIZED } from "../constants/http";
 import {
   setAuthCookies,
@@ -25,9 +25,8 @@ import {
 import { verifyToken } from "../utils/jwt";
 import SessionModel from "../models/session.model";
 import AppError from "../utils/AppError";
-import { reset } from "nodemon";
 
-export const registerHandler = expressAsyncHandler(async (req, res, next) => {
+export const registerHandler = expressAsyncHandler(async (req, res) => {
   // validate request
   const request = registerSchema.parse({
     ...req.body,
@@ -44,7 +43,7 @@ export const registerHandler = expressAsyncHandler(async (req, res, next) => {
   });
 });
 
-export const loginHandler = expressAsyncHandler(async (req, res, next) => {
+export const loginHandler = expressAsyncHandler(async (req, res) => {
   // validate request
   const request = loginSchema.parse({
     ...req.body,
@@ -61,7 +60,7 @@ export const loginHandler = expressAsyncHandler(async (req, res, next) => {
   });
 });
 
-export const logoutHandler = expressAsyncHandler(async (req, res, next) => {
+export const logoutHandler = expressAsyncHandler(async (req, res) => {
   const accessToken = req.cookies.accessToken;
   const resultPayload = verifyToken(accessToken) as {
     payload?: { sessionId?: string };
@@ -77,7 +76,7 @@ export const logoutHandler = expressAsyncHandler(async (req, res, next) => {
   });
 });
 
-export const refreshHandler = expressAsyncHandler(async (req, res, next) => {
+export const refreshHandler = expressAsyncHandler(async (req, res) => {
   const refreshToken = req.cookies.refreshToken as string | undefined;
 
   if (!refreshToken) {
@@ -104,7 +103,7 @@ export const refreshHandler = expressAsyncHandler(async (req, res, next) => {
 });
 
 export const verifyEmailHandler = expressAsyncHandler(
-  async (req: Request, res: Response, next: NextFunction) => {
+  async (req: Request, res: Response) => {
     const verificationCode = verificationCodeSchema.parse(req.params.code);
 
     // call service
@@ -116,10 +115,10 @@ export const verifyEmailHandler = expressAsyncHandler(
 );
 
 export const sendPasswordRestHandler = expressAsyncHandler(
-  async (req, res, next) => {
+  async (req, res) => {
     const email = emailSchema.parse(req.body.email);
 
-    const data = await sendPasswordResetEmail(email);
+     await sendPasswordResetEmail(email);
 
     res.status(OK).json({
       message: "Password reset email sent",
@@ -128,7 +127,7 @@ export const sendPasswordRestHandler = expressAsyncHandler(
 );
 
 export const restPasswordHandler = expressAsyncHandler(
-  async (req, res: Response, next) => {
+  async (req, res: Response) => {
     const request = resetPasswordSchema.parse(req.body);
 
     //call service

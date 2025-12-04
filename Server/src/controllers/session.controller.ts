@@ -1,13 +1,13 @@
 import expressAsyncHandler from "express-async-handler";
 import SessionModel from "../models/session.model";
-import { BAD_REQUEST, CONFLICT, NOT_FOUND, OK } from "../constants/http";
+import { BAD_REQUEST, NOT_FOUND, OK } from "../constants/http";
 import AppError from "../utils/AppError";
-import { NODE_ENV } from "../constants/env";
 import z from "zod";
 
 export const getSessionHandler = expressAsyncHandler(async (req, res) => {
   const sessions = await SessionModel.find(
     {
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       //@ts-ignore
       userId: req.userId,
       expiresAt: { $gt: Date.now() },

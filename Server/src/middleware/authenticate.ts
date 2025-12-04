@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { RequestHandler } from "express";
 import AppError from "../utils/AppError";
 import { UNAUTHORIZED } from "../constants/http";

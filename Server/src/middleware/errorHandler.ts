@@ -54,7 +54,7 @@ const handleAppError = (res: Response, error: AppError) => {
   });
 };
 
-const errorHandler: ErrorRequestHandler = async (error, req, res, next) => {
+const errorHandler: ErrorRequestHandler = async (error, req, res) => {
   console.log(`PATH: ${req.path}`, error);
 
   if (req.path === REFRESH_PATH) {

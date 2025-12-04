@@ -1,9 +1,8 @@
-import { sign, SignOptions, VerifyOptions } from "jsonwebtoken";
+import { SignOptions, VerifyOptions } from "jsonwebtoken";
 import { SessionDocument } from "../models/session.model";
 import { UserDocument } from "../models/user.model";
 import jwt from "jsonwebtoken";
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "../constants/env";
-import AppError from "./AppError";
 
 export type RefreshTokenPayload = {
   sessionId: SessionDocument["_id"];
@@ -63,7 +62,6 @@ export const signToken = (
 //   }
 // };
 
-
 export type TokenResult<T> = {
   payload: T | null;
   error?: string;
@@ -78,7 +76,9 @@ export const verifyToken = <TPayload extends object = AccessTokenPayload>(
   try {
     const payload = jwt.verify(token, secret, verifyOptions) as TPayload;
     return { payload };
-  } catch (error: any) {
-    return { payload: null, error: error.message };
+  } catch (error) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    return { payload: null, error: error?.message };
   }
 };

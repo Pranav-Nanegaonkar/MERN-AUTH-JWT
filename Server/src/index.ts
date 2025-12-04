@@ -35,7 +35,7 @@ app.use(cookieParser());
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(compression());
-app.get("/health", (req, res, next) => {
+app.get("/health", (req, res) => {
   // next(new AppError("test error", 400));
 
   res.status(OK).json({
