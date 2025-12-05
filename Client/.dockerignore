@@ -1,0 +1,8 @@
+node_modules
+build
+.git
+.env
+.vscode
+npm-debug.log
+yarn-error.log
+dist

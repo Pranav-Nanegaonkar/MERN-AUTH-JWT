@@ -1,0 +1,31 @@
+version: "3.8"
+
+services:
+  server:
+    build: ./server
+    ports:
+      - "5005:5005"
+    networks:
+      - app_network
+    environment:
+      - NODE_ENV=development
+      - PORT=5005
+      - APP_ORIGIN=http://client:5173
+      - MONGO_URL=mongodb+srv://nanegaonkarpranav68_db_user:EE3WzpN8yXeGYij1@cluster0.qj0hzy0.mongodb.net/?appName=Cluster0
+      - JWT_SECRET=myjwtsecret
+      - JWT_REFRESH_SECRET=myjwtrefreshsecret
+      - EMAIL_SENDER=temp@email.com
+      - RESEND_API_KEY=re_EEG22h1x_86tu1PB4siDj3XJE2S45HKUv
+
+  client:
+    build: ./client
+    ports:
+      - "5173:5173"
+    networks:
+      - app_network
+    environment:
+      - VITE_API_URL=http://server:5005
+
+networks:
+  app_network:
+    driver: bridge
