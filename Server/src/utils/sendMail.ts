@@ -17,7 +17,7 @@ const getToEmail = (to: string) => {
 };
 
 export const sendMail = async ({ to, subject, text, html }: Params) => {
-  return await resend.emails.send({
+  return await  resend.emails.send({
     from: getFromEmail(),
     to: getToEmail(to),
     subject,

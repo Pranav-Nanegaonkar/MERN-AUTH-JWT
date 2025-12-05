@@ -23,9 +23,11 @@ const app = express();
 
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+const allowedOrigins = APP_ORIGIN.split(",");
+
 app.use(
   cors({
-    origin: APP_ORIGIN,
+    origin: allowedOrigins,
     credentials: true,
   })
 );
