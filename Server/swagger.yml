@@ -8,6 +8,7 @@ servers:
   - url: http://localhost:4004
     description: Development server
 
+
 tags:
   - name: Auth
     description: Authentication endpoints for registration, login, logout, and password management
