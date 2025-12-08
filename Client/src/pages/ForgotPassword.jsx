@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Flex,
   Box,
@@ -19,6 +19,7 @@ import {
 import { sendPasswordResetEmail } from "../lib/api";
 
 const ForgotPassword = () => {
+
   const [email, setEmail] = useState("");
 
   const {
